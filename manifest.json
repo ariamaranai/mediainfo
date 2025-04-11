@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "mediainfo",
+  "version": "0",
+  "description": "View image or video info",
+  "icons": {
+    "128": "128.png"
+  },
+  "permissions": [
+    "contextMenus",
+    "userScripts"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "bg.js"
+  },
+  "action": {}
+}
