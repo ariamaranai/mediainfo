@@ -6,10 +6,10 @@ chrome.runtime.onInstalled.addListener(() =>
     documentUrlPatterns: ["https://*/*", "http://*/*", "file://*"]
   })
 );
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener((info, { id: tabId }) => {
     chrome.action.setPopup({
       popup: "popup.htm",
-      tabId: tab.id
+      tabId
     }, () => {
       if (info.mediaType == "image") {
         let url = info.srcUrl;
@@ -17,14 +17,17 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
           .then(r => Promise.all([r.clone().blob(), r.bytes(), r.headers.get("content-type").slice(6)]))
             .then(r => Promise.all([createImageBitmap(r[0]), r[1].length.toLocaleString("en-US"), r[2]]))
               .then(r =>
-                chrome.action.openPopup(() => chrome.runtime.sendMessage(
-                  "url: <a target=_blank href=" + url + ">" + url + "</a>\nsize: " +
-                  r[0].width +  " x " + r[0].height + "\nfilesize: " +  r[1] +  " bytes\nformat: " + r[2]
+                chrome.action.openPopup(() => (
+                  chrome.runtime.sendMessage(
+                    "url: <a target=_blank href=" + url + ">" + url + "</a>\nsize: " +
+                    r[0].width +  " x " + r[0].height + "\nfilesize: " +  r[1] +  " bytes\nformat: " + r[2],
+                  ),
+                  chrome.action.setPopup({ popup: "", tabId })
                 ))
               ).catch(() => 0);
       } else
         chrome.userScripts.execute({
-          target: { tabId: tab.id },
+          target: { tabId },
           js: [{ code:
 `(() => {
   let d = document;
@@ -50,9 +53,10 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 })();`
           }]
         }).then(results =>
-          (results &&= results[0].result) && chrome.action.openPopup(() =>
-            chrome.runtime.sendMessage(results)
-          )
+          (results &&= results[0].result) && chrome.action.openPopup(() => (
+            chrome.runtime.sendMessage(results),
+            chrome.action.setPopup({ popup: "", tabId })
+          ))
         ).catch(() => 0);
   });
 });
