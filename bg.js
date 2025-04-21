@@ -29,7 +29,7 @@ chrome.contextMenus.onClicked.addListener((info, { id: tabId }) => {
         chrome.userScripts.execute({
           target: { tabId },
           js: [{ code:
-`(() => {
+`(async () => {
   let d = document;
   let video = d.body.getElementsByTagName("video");
   let i = video.length;
@@ -47,6 +47,7 @@ chrome.contextMenus.onClicked.addListener((info, { id: tabId }) => {
       video = video[index];
     } else
       video = video[0];
+    await d.exitFullscreen();
     let src = video.currentSrc;
     return "url: <a target=_blank href=" + src + ">" + src + "</a>\\nsize: " + video.videoWidth + " x " + video.videoHeight;
   }
