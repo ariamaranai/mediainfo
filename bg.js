@@ -22,7 +22,10 @@ chrome.contextMenus.onClicked.addListener((info, { id: tabId }) => {
                     "url: <a target=_blank href=" + url + ">" + url + "</a>\nsize: " +
                     r[0].width +  " x " + r[0].height + "\nfilesize: " +  r[1] +  " bytes\nformat: " + r[2],
                   ),
-                  chrome.action.setPopup({ popup: "", tabId })
+                  chrome.action.setPopup({
+                    popup: "",
+                    tabId
+                  })
                 ))
               ).catch(() => 0);
       } else
@@ -56,7 +59,10 @@ chrome.contextMenus.onClicked.addListener((info, { id: tabId }) => {
         }).then(results =>
           (results &&= results[0].result) && chrome.action.openPopup(() => (
             chrome.runtime.sendMessage(results),
-            chrome.action.setPopup({ popup: "", tabId })
+            chrome.action.setPopup({
+              popup: "",
+              tabId
+            })
           ))
         ).catch(() => 0);
   });
