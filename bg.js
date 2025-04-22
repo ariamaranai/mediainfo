@@ -6,7 +6,7 @@ chrome.runtime.onInstalled.addListener(() =>
     documentUrlPatterns: ["https://*/*", "http://*/*", "file://*"]
   })
 );
-chrome.contextMenus.onClicked.addListener((info, { id: tabId }) => {
+chrome.contextMenus.onClicked.addListener((info, { id: tabId }) =>
     chrome.action.setPopup({
       popup: "popup.htm",
       tabId
@@ -65,5 +65,5 @@ chrome.contextMenus.onClicked.addListener((info, { id: tabId }) => {
             })
           ))
         ).catch(() => 0);
-  });
-});
+  })
+);
