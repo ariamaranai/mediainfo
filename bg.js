@@ -19,7 +19,7 @@ chrome.contextMenus.onClicked.addListener((info, { id: tabId }) =>
               .then(r =>
                 chrome.action.openPopup(() => (
                   chrome.runtime.sendMessage(
-                    "url: <a target=_blank href=" + url + ">" + url + "</a>\nsize: " +
+                    "url: <a style=display:contents target=_blank href=" + url + ">" + url + "</a>\nsize: " +
                     r[0].width +  " x " + r[0].height + "\nfilesize: " +  r[1] +  " bytes\nformat: " + r[2],
                   ),
                   chrome.action.setPopup({
@@ -50,7 +50,7 @@ chrome.contextMenus.onClicked.addListener((info, { id: tabId }) =>
       video = video[0];
     await d.exitFullscreen();
     let src = video.currentSrc;
-    return "url: <a target=_blank href=" + src + ">" + src + "</a>\\nsize: " + video.videoWidth + " x " + video.videoHeight;
+    return "url: <a style=display:contents target=_blank href=" + src + ">" + src + "</a>\\nsize: " + video.videoWidth + " x " + video.videoHeight;
   }
 })();`
           }]
