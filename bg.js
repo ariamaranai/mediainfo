@@ -6,7 +6,7 @@ chrome.runtime.onInstalled.addListener(() =>
     documentUrlPatterns: ["https://*/*", "http://*/*", "file://*"]
   })
 );
-chrome.contextMenus.onClicked.addListener((info, { id: tabId }) =>
+chrome.contextMenus.onClicked.addListener((info, { id: tabId, windowId }) =>
     chrome.action.setPopup({
       popup: "popup.htm",
       tabId
@@ -26,41 +26,43 @@ chrome.contextMenus.onClicked.addListener((info, { id: tabId }) =>
                   tabId
                 })
               )
-              ).catch(() => 0);
+          ).catch(() => 0);
       } else
-        chrome.userScripts.execute({
-          target: { tabId },
-          js: [{ code:
-`(async () => {
+        chrome.windows.get(windowId, async window => {
+          window.state == "fullscreen" &&
+          await chrome.windows.update(windowId, {
+            state: "maximized"
+          });
+          try {
+            let { result } = (await chrome.userScripts.execute({
+              target: { tabId },
+              js: [{ code:
+`(() => {
   let d = document;
   let video = d.body.getElementsByTagName("video");
   let i = video.length;
   if (i) {
+    let index = 0;
     if (d.head.childElementCount != 1) {
-      let index = 0;
       let maxWidth = 0;
       let width = 0;
       while (
         maxWidth < (width = video[--i].offsetWidth) && (maxWidth = width, index = i),
         i
       );
-      video = video[index];
-    } else
-      video = video[0];
-    await d.exitFullscreen();
-    let src = video.currentSrc;
+    }
+    let src = (video = video[index]).currentSrc;
     return "url: <a style=display:contents target=_blank href=" + src + ">" + src + "</a>\\nsize: " + video.videoWidth + " x " + video.videoHeight;
   }
 })();`
-          }]
-        }).then(results =>
-          results && (
-            chrome.action.openPopup(() => chrome.runtime.sendMessage(results[0].result)),
-            chrome.action.setPopup({
-              popup: "",
-              tabId
-            })
-          )
-        ).catch(() => 0);
+                }]
+              }))[0];
+              chrome.action.openPopup(() => chrome.runtime.sendMessage(result)),
+              chrome.action.setPopup({
+                popup: "",
+                tabId
+              })
+            } catch (e) {}
+        })
   })
 );
