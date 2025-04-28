@@ -54,8 +54,8 @@ chrome.contextMenus.onClicked.addListener((info, { id: tabId }) =>
 })();`
           }]
         }).then(results =>
-          (results &&= results[0].result) && (
-            chrome.action.openPopup(() => chrome.runtime.sendMessage(results)),
+          results && (
+            chrome.action.openPopup(() => chrome.runtime.sendMessage(results[0].result)),
             chrome.action.setPopup({
               popup: "",
               tabId
