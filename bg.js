@@ -18,7 +18,7 @@ chrome.contextMenus.onClicked.addListener((info, { id: tabId, windowId }) =>
             .then(r => Promise.all([createImageBitmap(r[0]), r[1].length.toLocaleString("en-US"), r[2]]))
               .then(r => (
                 chrome.action.openPopup(() => chrome.runtime.sendMessage(
-                  "url: <a style=display:contents target=_blank href=" + url + ">" + url + "</a>\nsize: " +
+                  "url: <a target=_blank href=" + url + ">" + url + "</a>\nsize: " +
                   r[0].width +  " x " + r[0].height + "\nfilesize: " +  r[1] +  " bytes\nformat: " + r[2],
                 )),
                 chrome.action.setPopup({
@@ -34,8 +34,9 @@ chrome.contextMenus.onClicked.addListener((info, { id: tabId, windowId }) =>
             state: "maximized"
           });
           try {
-            let { result } = (await chrome.userScripts.execute({
-              target: { tabId },
+            let { frameId } = info;
+            let results = (await chrome.userScripts.execute({
+              target: frameId ? { tabId, frameIds: [frameId] } : { tabId, allFrames: !0 },
               js: [{ code:
 `(() => {
   let d = document;
@@ -52,17 +53,20 @@ chrome.contextMenus.onClicked.addListener((info, { id: tabId, windowId }) =>
       );
     }
     let src = (video = video[index]).currentSrc;
-    return "url: <a style=display:contents target=_blank href=" + src + ">" + src + "</a>\\nsize: " + video.videoWidth + " x " + video.videoHeight;
+    return "url: <a target=_blank href=" + src + ">" + src + "</a>\\nsize: " + video.videoWidth + " x " + video.videoHeight + "\\n";
   }
 })();`
                 }]
-              }))[0];
-              chrome.action.openPopup(() => chrome.runtime.sendMessage(result)),
+              })
+            );
+            (results &&= results.reduce((a, v) => a + (v.result || ""), "")) && (
+              chrome.action.openPopup(() => chrome.runtime.sendMessage(results.slice(0, -1))),
               chrome.action.setPopup({
                 popup: "",
                 tabId
               })
-            } catch (e) {}
+            )
+          } catch (e) {}
         })
   })
 );
