@@ -8,6 +8,7 @@
   },
   "permissions": [
     "contextMenus",
+    "downloads",
     "userScripts"
   ],
   "host_permissions": [
