@@ -25,7 +25,7 @@ chrome.contextMenus.onClicked.addListener(async (info, { id: tabId, windowId }) 
         js: [{ code:
 `(() => {
   let d = document;
-  let video = document.body.getElementsByTagName("video");
+  let video = d.body.getElementsByTagName("video");
   let i = video.length;
   if (i) {
     let index = 0;
