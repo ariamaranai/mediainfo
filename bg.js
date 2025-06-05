@@ -6,7 +6,7 @@ chrome.contextMenus.onClicked.addListener(async (info, { id: tabId, windowId }) 
       let url = info.srcUrl;
       let res = await fetch (url);
       let format = res.headers.get("content-type");
-      let b = (await res.clone().bytes()).length;
+      let b = (await res.clone().arrayBuffer()).byteLength;
       let localeFilesize = b.toLocaleString("en-US");
       let bmp = await createImageBitmap(await res.blob());
       chrome.action.openPopup(() =>
