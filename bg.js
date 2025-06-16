@@ -1,7 +1,8 @@
 chrome.contextMenus.onClicked.addListener(async (info, { id: tabId, windowId }) => {
   chrome.action.setPopup({ popup: "popup.htm", tabId });
   try {
-    (await chrome.windows.get(windowId)).state == "fullscreen" && await chrome.windows.update(windowId, { state: "maximized" });
+    (await chrome.windows.get(windowId)).state == "fullscreen" &&
+    await chrome.windows.update(windowId, { state: "maximized" });
     if (info.mediaType == "image") {
       let url = info.srcUrl;
       let res = await fetch (url);
@@ -19,9 +20,8 @@ chrome.contextMenus.onClicked.addListener(async (info, { id: tabId, windowId }) 
         )
       );
     } else {
-      let { frameId } = info;
       let results =  await chrome.userScripts.execute({
-        target: frameId ? { tabId, frameIds: [frameId] } : { tabId, allFrames: !0 },
+        target: { tabId, allFrames: !0 },
         js: [{ file: "video.js" }]
       });
       if (results) {
