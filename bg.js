@@ -1,6 +1,6 @@
 chrome.contextMenus.onClicked.addListener(async (info, { id: tabId, windowId }) => {
-  chrome.action.setPopup({ popup: "popup.htm", tabId });
   try {
+    await chrome.action.setPopup({ popup: "popup.htm", tabId });
     (await chrome.windows.get(windowId)).state == "fullscreen" &&
     await chrome.windows.update(windowId, { state: "maximized" });
     if (info.mediaType == "image") {
@@ -63,7 +63,6 @@ chrome.contextMenus.onClicked.addListener(async (info, { id: tabId, windowId }) 
       }
     }
   } catch (e) {}
-  chrome.action.setPopup({ popup: "", tabId });
 });
 chrome.runtime.onInstalled.addListener(() =>
   chrome.contextMenus.create({
