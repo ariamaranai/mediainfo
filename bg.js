@@ -62,7 +62,7 @@ chrome.contextMenus.onClicked.addListener(async (info, { id: tabId, windowId }) 
         }
       }
     }
-  } catch (e) {}
+  } catch {}
 });
 chrome.runtime.onInstalled.addListener(() =>
   chrome.contextMenus.create({
