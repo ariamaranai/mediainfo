@@ -1,5 +1,5 @@
 (() => {
-  let { document, innerWidth, innerHeight, Math } = self;
+  let { Math, document, innerWidth, innerHeight } = self;
   let { max, min } = Math;
   let videos = document.getElementsByTagName("video");
   let video;
