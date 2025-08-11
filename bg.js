@@ -5,7 +5,7 @@ chrome.contextMenus.onClicked.addListener(async (info, { id: tabId, windowId }) 
     await chrome.windows.update(windowId, { state: "maximized" });
     if (info.mediaType == "image") {
       let url = info.srcUrl;
-      let res = await fetch (url);
+      let res = await fetch(url);
       let format = res.headers.get("content-type");
       let b = (await res.clone().arrayBuffer()).byteLength;
       let localeFilesize = b.toLocaleString("en-US");
