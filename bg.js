@@ -30,7 +30,7 @@ chrome.contextMenus.onClicked.addListener(async (info, { id: tabId, windowId }) 
         let rs = [0];
         let result;
         while (
-          (result = results[--i].result) && r[0] < result[0] && (r = result), 
+          (result = results[--i].result) && rs[0] < result[0] && (rs = result), 
           i
         );
         if (rs.length > 1) {
@@ -47,7 +47,7 @@ chrome.contextMenus.onClicked.addListener(async (info, { id: tabId, windowId }) 
                     chrome.action.openPopup(() =>
                       chrome.runtime.sendMessage([
                         url,
-                        wxh + (
+                        wxh + " " + (
                           size > 1023 && size < 1099511627775
                             ? (size < 1048576 ? (size / 1024).toFixed(1) + " KB (" : size < 1073741824 ? (size / 1048576).toFixed(1) + " MB (" : (size / 1073741824).toFixed(1)  + " GB (") + localeSize + " bytes)"
                             : localeSize + "Bytes"
@@ -64,7 +64,7 @@ chrome.contextMenus.onClicked.addListener(async (info, { id: tabId, windowId }) 
         }
       }
     }
-  } catch {}
+  } catch (e) { console.log(e) }
 });
 chrome.runtime.onInstalled.addListener(() =>
   chrome.contextMenus.create({
