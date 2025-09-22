@@ -1,8 +1,7 @@
 chrome.contextMenus.onClicked.addListener(async (info, { id: tabId, windowId }) => {
   try {
     await chrome.action.setPopup({ popup: "popup.htm", tabId });
-    (await chrome.windows.get(windowId)).state == "fullscreen" &&
-    await chrome.windows.update(windowId, { state: "maximized" });
+    let isFullscreen = (await chrome.windows.get(windowId)).state == "fullscreen";
     if (info.mediaType == "image") {
       let url = info.srcUrl;
       let r = await fetch(url);
@@ -10,6 +9,7 @@ chrome.contextMenus.onClicked.addListener(async (info, { id: tabId, windowId }) 
       let { size } = blob;
       let localeSize = size.toLocaleString("en-US");
       let bmp = await createImageBitmap(blob);
+      isFullscreen && await chrome.windows.update(windowId, { state: "maximized" });
       chrome.action.openPopup(() =>
         chrome.runtime.sendMessage([
           url,
@@ -34,6 +34,7 @@ chrome.contextMenus.onClicked.addListener(async (info, { id: tabId, windowId }) 
           i
         );
         if (rs.length > 1) {
+          isFullscreen && await chrome.windows.update(windowId, { state: "maximized" });
           let url = rs[2];
           let wxh = rs[0] + " x " + rs[1];
           url[0] != "b"

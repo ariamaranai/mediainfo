@@ -1,7 +1,8 @@
 (() => {
   let { Math, document, innerWidth, innerHeight } = self;
   let { max, min } = Math;
-  let videos = document.getElementsByTagName("video");
+  let { fullscreenElement } = document;
+  let videos = (fullscreenElement ?? document).getElementsByTagName("video");
   let video;
   let maxVisibleSize = 0;
   let i = 0;
@@ -17,5 +18,6 @@
     }
     ++i;
   }
-  return video && [video.videoWidth, video.videoHeight, video.currentSrc];
+  return (video ??= fullscreenElement?.shadowRoot?.querySelector("video")) &&
+    [video.videoWidth, video.videoHeight, video.currentSrc];
 })();
