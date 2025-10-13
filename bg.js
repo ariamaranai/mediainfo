@@ -7,19 +7,20 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     let dimension = "";
     let mime = 0;
     let download = url => new Promise(resolve => {
+      let { downloads } = chrome;
       let onCreated = item => {
-        chrome.downloads.cancel(item.id);
-        chrome.downloads.onCreated.removeListener(onCreated);
+        downloads.cancel(item.id);
+        downloads.onCreated.removeListener(onCreated);
         let _mime = item.mime;
         (_mime.includes("image") || _mime.includes("video")) && (
           finalUrl = item.finalUrl,
           totalBytes = item.totalBytes,
           mime = _mime
         );
-        resolve()
+        resolve();
       }
-      chrome.downloads.onCreated.addListener(onCreated);
-      chrome.downloads.download({ url });
+      downloads.onCreated.addListener(onCreated);
+      downloads.download({ url });
     });
     let target = { tabId, allFrames: !0 };
     if (info.mediaType == "image") {
