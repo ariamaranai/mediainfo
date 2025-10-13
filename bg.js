@@ -1,71 +1,111 @@
-chrome.contextMenus.onClicked.addListener(async (info, { id: tabId, windowId }) => {
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   try {
-    await chrome.action.setPopup({ popup: "popup.htm", tabId });
-    let isFullscreen = (await chrome.windows.get(windowId)).state == "fullscreen";
+    let tabId = tab.id;
+    let { srcUrl } = info;
+    let finalUrl = 0;
+    let totalBytes = 0;
+    let dimension = "";
+    let mime = 0;
+    let download = url => new Promise(resolve => {
+      let onCreated = item => {
+        chrome.downloads.cancel(item.id);
+        chrome.downloads.onCreated.removeListener(onCreated);
+        let _mime = item.mime;
+        (_mime.includes("image") || _mime.includes("video")) && (
+          finalUrl = item.finalUrl,
+          totalBytes = item.totalBytes,
+          mime = _mime
+        );
+        resolve()
+      }
+      chrome.downloads.onCreated.addListener(onCreated);
+      chrome.downloads.download({ url });
+    });
+    let target = { tabId, allFrames: !0 };
     if (info.mediaType == "image") {
-      let url = info.srcUrl;
-      let r = await fetch(url);
-      let blob = await r.blob();
-      let { size } = blob;
-      let localeSize = size.toLocaleString("en-US");
-      let bmp = await createImageBitmap(blob);
-      isFullscreen && await chrome.windows.update(windowId, { state: "maximized" });
-      chrome.action.openPopup(() =>
-        chrome.runtime.sendMessage([
-          url,
-          bmp.width + " x " + bmp.height + "\n" + (
-            size > 1023 && size < 1073741824
-              ? (size < 1048576 ? (size / 1024).toFixed(1) + " KB (" : (size / 1048576).toFixed(1) + " MB (") + localeSize + " bytes)\n"
-              : localeSize + "Bytes\n"
-          ) + blob.type
-        ])
-      );
+      await download(srcUrl);
+      let { result } = (await chrome.userScripts.execute({
+          target,
+          js: [{
+            code: '(a=>a&&a.naturalWidth+" x "+a.naturalHeight)([...document.images].find(e=>e.currentSrc=="' + srcUrl + '"))'
+          }]
+        }))[0];
+        result && (dimension = result);
     } else {
       let results =  await chrome.userScripts.execute({
-        target: { tabId, allFrames: !0 },
-        js: [{ file: "video.js" }]
+        target,
+        js: [
+          srcUrl
+          ? { code: '(a=>a&&[a.videoWidth,a.videoHeight,a.currentSrc])([...document.getElementsByTagName("video")].find(e=>e.currentSrc=="' + srcUrl + '"))' }
+          : { file: "video.js" }
+        ]
       });
-      if (results) {
-        let i = results.length;
-        let rs = [0];
-        let result;
-        while (
-          (result = results[--i].result) && rs[0] < result[0] && (rs = result), 
-          i
-        );
-        if (rs.length > 1) {
-          isFullscreen && await chrome.windows.update(windowId, { state: "maximized" });
-          let url = rs[2];
-          let wxh = rs[0] + " x " + rs[1];
-          url[0] != "b"
-            ? await new Promise(resolve => {
-                let f = item => {
-                  if (item.url == url) {
-                    chrome.downloads.cancel(item.id);
-                    chrome.downloads.onCreated.removeListener(f);
-                    let size = item.totalBytes;
-                    let localeSize = size.toLocaleString("en-US");
-                    chrome.action.openPopup(() =>
-                      chrome.runtime.sendMessage([
-                        url,
-                        wxh + " " + (
-                          size > 1023 && size < 1099511627775
-                            ? (size < 1048576 ? (size / 1024).toFixed(1) + " KB (" : size < 1073741824 ? (size / 1048576).toFixed(1) + " MB (" : (size / 1073741824).toFixed(1)  + " GB (") + localeSize + " bytes)"
-                            : localeSize + "Bytes"
-                          )
-                        ])
-                      );
-                    resolve();
-                  }
+      let { result } = results.reduce((a, b) => a.result[0] < b.result[0] ? b : a);
+      if (result) {
+        dimension = result[0] + " x " + result[1];
+        await download(srcUrl ??= result[2]);
+        if (!totalBytes) {
+          let tabUrl = tab.url;
+          let addRules = [{
+            id: 1,
+            priority: 2147483647,
+            action: {
+              type: "modifyHeaders",
+              requestHeaders: [
+                {
+                  header: "origin",
+                  operation: "set",
+                  value: (new URL(tabUrl)).origin
+                },
+                {
+                  header: "referer",
+                  operation: "set",
+                  value: tabUrl
                 }
-                chrome.downloads.onCreated.addListener(f);
-                chrome.downloads.download({ url });
-              })
-            : chrome.action.openPopup(() => chrome.runtime.sendMessage([url, wxh]));
+              ]
+            },
+            condition: {
+              resourceTypes: ["xmlhttprequest"],
+              urlFilter: "|" + srcUrl + "|"
+            }
+          }];
+          await chrome.declarativeNetRequest.updateSessionRules({ addRules });
+          let controller = new AbortController;
+          finalUrl = (await fetch(srcUrl, { redirect: "follow", signal: controller.signal })).url || srcUrl;
+          controller.abort();
+          addRules[0].condition.urlFilter = "|" + finalUrl + "|";
+          await chrome.declarativeNetRequest.updateSessionRules({
+            removeRuleIds: [1],
+            addRules
+          })
+          let { headers } = await fetch (finalUrl, { method: "HEAD" });
+          totalBytes = +(headers.get("content-length"));
+          mime = headers.get("content-type");
+          chrome.declarativeNetRequest.updateSessionRules({
+            removeRuleIds: [1]
+          });
         }
       }
     }
-  } catch (e) { console.log(e) }
+    if (totalBytes) {
+      let localeTotalBytes = totalBytes.toLocaleString("en-US");
+      dimension += "\n" +
+      (totalBytes > 1023 && totalBytes < 1099511627775
+        ? (totalBytes < 1048576 ? (totalBytes / 1024).toFixed(1) + " KB (" : totalBytes < 1073741824 ? (totalBytes / 1048576).toFixed(1) + " MB (" : (totalBytes / 1073741824).toFixed(1)  + " GB (") + localeTotalBytes + " bytes) "
+        : localeTotalBytes + " Bytes ") +
+      mime;
+    }
+    let { windowId } = tab;
+    (await chrome.windows.get(windowId)).state == "fullscreen" &&
+    await chrome.windows.update(windowId, { state: "maximized" });
+    await chrome.action.setPopup({ popup: "popup.htm", tabId });
+    await chrome.action.openPopup();
+    chrome.runtime.sendMessage([finalUrl, dimension]);
+  } catch {
+    chrome.declarativeNetRequest.updateSessionRules({
+      removeRuleIds: [1]
+    });
+  }
 });
 chrome.runtime.onInstalled.addListener(() =>
   chrome.contextMenus.create({
