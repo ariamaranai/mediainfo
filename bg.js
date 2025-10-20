@@ -46,45 +46,48 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         dimension = result[0] + " x " + result[1];
         await download(srcUrl ??= result[2]);
         if (!totalBytes) {
-          let tabUrl = tab.url;
-          let addRules = [{
-            id: 1,
-            priority: 2147483647,
-            action: {
-              type: "modifyHeaders",
-              requestHeaders: [
-                {
-                  header: "origin",
-                  operation: "set",
-                  value: (new URL(tabUrl)).origin
-                },
-                {
-                  header: "referer",
-                  operation: "set",
-                  value: tabUrl
-                }
-              ]
-            },
-            condition: {
-              resourceTypes: ["xmlhttprequest"],
-              urlFilter: "|" + srcUrl + "|"
-            }
-          }];
-          await chrome.declarativeNetRequest.updateSessionRules({ addRules });
-          let controller = new AbortController;
-          finalUrl = (await fetch(srcUrl, { redirect: "follow", signal: controller.signal })).url || srcUrl;
-          controller.abort();
-          addRules[0].condition.urlFilter = "|" + finalUrl + "|";
-          await chrome.declarativeNetRequest.updateSessionRules({
-            removeRuleIds: [1],
-            addRules
-          })
-          let { headers } = await fetch (finalUrl, { method: "HEAD" });
-          totalBytes = +(headers.get("content-length"));
-          mime = headers.get("content-type");
-          chrome.declarativeNetRequest.updateSessionRules({
-            removeRuleIds: [1]
-          });
+          if (srcUrl[0] != "b") {
+            let tabUrl = tab.url;
+            let addRules = [{
+              id: 1,
+              priority: 2147483647,
+              action: {
+                type: "modifyHeaders",
+                requestHeaders: [
+                  {
+                    header: "origin",
+                    operation: "set",
+                    value: (new URL(tabUrl)).origin
+                  },
+                  {
+                    header: "referer",
+                    operation: "set",
+                    value: tabUrl
+                  }
+                ]
+              },
+              condition: {
+                resourceTypes: ["xmlhttprequest"],
+                urlFilter: "|" + srcUrl + "|"
+              }
+            }];
+            await chrome.declarativeNetRequest.updateSessionRules({ addRules });
+            let controller = new AbortController;
+            finalUrl = (await fetch(srcUrl, { redirect: "follow", signal: controller.signal })).url || srcUrl;
+            controller.abort();
+            addRules[0].condition.urlFilter = "|" + finalUrl + "|";
+            await chrome.declarativeNetRequest.updateSessionRules({
+              removeRuleIds: [1],
+              addRules
+            })
+            let { headers } = await fetch(finalUrl, { method: "HEAD" });
+            totalBytes = +(headers.get("content-length"));
+            mime = headers.get("content-type");
+            chrome.declarativeNetRequest.updateSessionRules({
+              removeRuleIds: [1]
+            });
+          } else
+            finalUrl = srcUrl;
         }
       }
     }

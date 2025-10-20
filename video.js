@@ -1,5 +1,6 @@
 (() => {
-  let video = document.fullscreenElement || document.scrollingElement;
+  let d = document;
+  let video = d.fullscreenElement || d.scrollingElement;
   if (video.tagName != "VIDEO") {
     let videos = video.getElementsByTagName("VIDEO");
     let { max, min } = Math;
