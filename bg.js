@@ -80,7 +80,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
               removeRuleIds: [1],
               addRules
             })
-            let { headers } = await fetch(finalUrl, { method: "HEAD" });
+            let headers = (await fetch(finalUrl, { method: "HEAD" })).headers;
             totalBytes = +headers.get("content-length");
             mime = headers.get("content-type");
             chrome.declarativeNetRequest.updateSessionRules({
