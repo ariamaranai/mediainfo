@@ -81,7 +81,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
               addRules
             })
             let { headers } = await fetch(finalUrl, { method: "HEAD" });
-            totalBytes = +(headers.get("content-length"));
+            totalBytes = +headers.get("content-length");
             mime = headers.get("content-type");
             chrome.declarativeNetRequest.updateSessionRules({
               removeRuleIds: [1]
@@ -92,7 +92,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       }
     }
     if (totalBytes) {
-      let localeTotalBytes = totalBytes.toLocaleString("en-US");
+      let localeTotalBytes = totalBytes.toLocaleString();
       dimension += "\n" +
       (totalBytes > 1023 && totalBytes < 1099511627775
         ? (totalBytes < 1048576 ? (totalBytes / 1024).toFixed(1) + " KB (" : totalBytes < 1073741824 ? (totalBytes / 1048576).toFixed(1) + " MB (" : (totalBytes / 1073741824).toFixed(1)  + " GB (") + localeTotalBytes + " bytes) "
