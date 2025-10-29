@@ -1,13 +1,11 @@
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   try {
-    let tabId = tab.id;
-    let { srcUrl } = info;
     let finalUrl = 0;
     let totalBytes = 0;
     let dimension = "";
     let mime = 0;
     let download = url => new Promise(resolve => {
-      let { downloads } = chrome;
+      let downloads = chrome.downloads;
       let onCreated = item => {
         downloads.cancel(item.id);
         downloads.onCreated.removeListener(onCreated);
@@ -22,15 +20,17 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       downloads.onCreated.addListener(onCreated);
       downloads.download({ url });
     });
+    let tabId = tab.id;
     let target = { tabId, allFrames: !0 };
+    let srcUrl = info.srcUrl;
     if (info.mediaType == "image") {
       await download(srcUrl);
-      let { result } = (await chrome.userScripts.execute({
+      let result = (await chrome.userScripts.execute({
           target,
           js: [{
             code: '(a=>a&&a.naturalWidth+" x "+a.naturalHeight)([...document.images].find(e=>e.currentSrc=="' + srcUrl + '"))'
           }]
-        }))[0];
+        }))[0].result;
         result && (dimension = result);
     } else {
       let results =  await chrome.userScripts.execute({
@@ -41,7 +41,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
           : { file: "video.js" }
         ]
       });
-      let { result } = results.reduce((a, b) => a.result[0] < b.result[0] ? b : a);
+      let result = results.reduce((a, b) => a.result[0] < b.result[0] ? b : a).result;
       if (result) {
         dimension = result[0] + " x " + result[1];
         await download(srcUrl ??= result[2]);
@@ -73,7 +73,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
             }];
             await chrome.declarativeNetRequest.updateSessionRules({ addRules });
             let controller = new AbortController;
-            finalUrl = (await fetch(srcUrl, { redirect: "follow", signal: controller.signal })).url || srcUrl;
+            finalUrl = (await fetch(srcUrl, { redirect: "follow", signal: controller.signal })).url;
             controller.abort();
             addRules[0].condition.urlFilter = "|" + finalUrl + "|";
             await chrome.declarativeNetRequest.updateSessionRules({
@@ -99,16 +99,14 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         : localeTotalBytes + " Bytes ") +
       mime;
     }
-    let { windowId } = tab;
+    let windowId = tab.windowId;
     (await chrome.windows.get(windowId)).state == "fullscreen" &&
     await chrome.windows.update(windowId, { state: "maximized" });
     await chrome.action.setPopup({ popup: "popup.htm", tabId });
     await chrome.action.openPopup();
     chrome.runtime.sendMessage([finalUrl, dimension]);
   } catch {
-    chrome.declarativeNetRequest.updateSessionRules({
-      removeRuleIds: [1]
-    });
+    chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds: [1] });
   }
 });
 chrome.runtime.onInstalled.addListener(() =>
