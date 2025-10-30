@@ -9,8 +9,8 @@
     while (i < videos.length) {
       let _video = videos[i];
       if (_video.readyState) {
-        let { x, right, y, bottom } = _video.getBoundingClientRect();
-        let visibleSize = max(min(right, innerWidth) - max(x, 0), 0) * max(min(bottom, innerHeight) - max(y, 0), 0);
+        let rect = _video.getBoundingClientRect();
+        let visibleSize = max(min(rect.right, innerWidth) - max(rect.x, 0), 0) * max(min(rect.bottom, innerHeight) - max(rect.y, 0), 0);
         maxVisibleSize < visibleSize && (
           maxVisibleSize = visibleSize,
           video = _video
