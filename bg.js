@@ -5,7 +5,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     let dimension = "";
     let mime = 0;
     let download = url => new Promise(resolve => {
-      let downloads = chrome.downloads;
+      let { downloads } = chrome;
       let onCreated = item => {
         downloads.cancel(item.id);
         downloads.onCreated.removeListener(onCreated);
@@ -80,7 +80,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
               removeRuleIds: [1],
               addRules
             })
-            let headers = (await fetch(finalUrl, { method: "HEAD" })).headers;
+            let { headers } = await fetch(finalUrl, { method: "HEAD" });
             totalBytes = +headers.get("content-length");
             mime = headers.get("content-type");
             chrome.declarativeNetRequest.updateSessionRules({
@@ -99,7 +99,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         : localeTotalBytes + " Bytes ") +
       mime;
     }
-    let windowId = tab.windowId;
+    let { windowId } = tab;
     (await chrome.windows.get(windowId)).state == "fullscreen" &&
     await chrome.windows.update(windowId, { state: "maximized" });
     await chrome.action.setPopup({ popup: "popup.htm", tabId });
