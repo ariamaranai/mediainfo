@@ -60,7 +60,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
                     value: (new URL(tabUrl)).origin
                   },
                   {
-                    header: "referer",
+                    header: "referrer",
                     operation: "set",
                     value: tabUrl
                   }
