@@ -18,8 +18,7 @@
       }
       ++i;
     }
-    video?.readyState || (video = video.shadowRoot?.querySelector("VIDEO"))?.readyState || (video = 0);
-  } else
-    video.readyState || (video = 0);
-  return video && [video.videoWidth, video.videoHeight, video.currentSrc];
+    video?.readyState || (video = video.shadowRoot?.querySelector("VIDEO"));
+  }
+  return video?.readyState && [video.videoWidth, video.videoHeight, video.currentSrc];
 })();
