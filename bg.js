@@ -27,6 +27,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       await download(srcUrl);
       let result = (await chrome.userScripts.execute({
           target,
+          world: "MAIN",
           js: [{
             code: '(a=>a&&a.naturalWidth+" x "+a.naturalHeight)([...document.images].find(e=>e.currentSrc=="' + srcUrl + '"))'
           }]
@@ -35,6 +36,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     } else {
       let results =  await chrome.userScripts.execute({
         target,
+        world: "MAIN",
         js: [
           srcUrl
           ? { code: '(a=>a&&[a.videoWidth,a.videoHeight,a.currentSrc])([...document.getElementsByTagName("video")].find(e=>e.currentSrc=="' + srcUrl + '"))' }
