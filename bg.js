@@ -43,7 +43,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
           : { file: "video.js" }
         ]
       });
-      let result = results.reduce((a, b) => a.result[0] < b.result[0] ? b : a).result;
+      let result = results.reduce((best, v) => v.result && (!best || best.result[0] < v.result[0]) ? v : best, null)?.result;
       if (result) {
         dimension = result[0] + " x " + result[1];
         await download(srcUrl ??= result[2]);
