@@ -3,7 +3,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     let finalUrl = 0;
     let totalBytes = 0;
     let dimension = "";
-    let mime = 0;
+    let mime = "";
     let download = url => new Promise(resolve => {
       let { downloads } = chrome;
       let onCreated = item => {
@@ -81,7 +81,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
             await chrome.declarativeNetRequest.updateSessionRules({
               removeRuleIds: [1],
               addRules
-            })
+            });
             let { headers } = await fetch(finalUrl, { method: "HEAD" });
             totalBytes = +headers.get("content-length");
             mime = headers.get("content-type");
