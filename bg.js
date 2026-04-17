@@ -29,8 +29,14 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         target,
         args: [srcUrl],
         func: srcUrl => {
-          let img = [...document.images].find(e=> e.currentSrc == srcUrl);
-          return img && [img.naturalWidth, img.naturalHeight];
+          let images = document.images;
+          let i = 0;
+          while (i < images.length) {
+            let image = images[i];
+            if (image.currentSrc == srcUrl)
+              return [image.naturalWidth, image.naturalHeight];
+            ++i;
+          }
         }
       }))[0].result;
       result && (dimension = result[0] + " x " + result[1] + " (" + result[0] / result[1] + ")");
@@ -41,8 +47,14 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
             target,
             args: [srcUrl],
             func: srcUrl => {
-              let video = [...document.getElementsByTagName("video")].find(e=> e.currentSrc == srcUrl);
-              return video && [video.videoWidth, video.videoHeight, video.currentSrc];
+              let videos = document.getElementsByTagName("video");
+              let i = 0;
+              while (i < videos.length) {
+                let video = videos[i];
+                if (video.currentSrc == src)
+                  return [video.videoWidth, video.videoHeight, video.currentSrc];
+                ++i;
+              }
             }
           }
           : {
