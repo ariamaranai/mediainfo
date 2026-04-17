@@ -113,9 +113,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     await chrome.windows.update(windowId, { state: "maximized" });
     await chrome.action.setPopup({ popup: "popup.htm", tabId });
     await chrome.action.openPopup();
-    chrome.runtime.sendMessage([finalUrl, dimension]);
+    return chrome.runtime.sendMessage([finalUrl, dimension]);
   } catch {
-    chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds: [1] });
+    return chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds: [1] });
   }
 });
 chrome.runtime.onInstalled.addListener(() =>
