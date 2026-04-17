@@ -18,31 +18,38 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         resolve();
       }
       downloads.onCreated.addListener(onCreated);
-      downloads.download({ url });
+      return downloads.download({ url });
     });
     let tabId = tab.id;
     let target = { tabId, allFrames: !0 };
     let srcUrl = info.srcUrl;
     if (info.mediaType == "image") {
       await download(srcUrl);
-      let result = (await chrome.userScripts.execute({
-          target,
-          world: "MAIN",
-          js: [{
-            code: '(a=>a&&a.naturalWidth+" x "+a.naturalHeight)([...document.images].find(e=>e.currentSrc=="' + srcUrl + '"))'
-          }]
-        }))[0].result;
-        result && (dimension = result);
-    } else {
-      let results =  await chrome.userScripts.execute({
+      let result = (await chrome.scripting.executeScript({
         target,
-        world: "MAIN",
-        js: [
-          srcUrl
-          ? { code: '(a=>a&&[a.videoWidth,a.videoHeight,a.currentSrc])([...document.getElementsByTagName("video")].find(e=>e.currentSrc=="' + srcUrl + '"))' }
-          : { file: "video.js" }
-        ]
-      });
+        args: [srcUrl],
+        func: srcUrl => {
+          let img = [...document.images].find(e=> e.currentSrc == srcUrl);
+          return img && [img.naturalWidth, img.naturalHeight];
+        }
+      }))[0].result;
+      result && (dimension = result[0] + " x " + result[1] + " (" + result[0] / result[1] + ")");
+    } else {
+      let results =  await chrome.scripting.executeScript(
+        srcUrl
+          ? {
+            target,
+            args: [srcUrl],
+            func: srcUrl => {
+              let video = [...document.getElementsByTagName("video")].find(e=> e.currentSrc == srcUrl);
+              return video && [video.videoWidth, video.videoHeight, video.currentSrc];
+            }
+          }
+          : {
+            target,
+            files: ["video.js"]
+          }
+      );
       let result = results.reduce((best, v) => v.result && (!best || best.result[0] < v.result[0]) ? v : best, null)?.result;
       if (result) {
         dimension = result[0] + " x " + result[1];
