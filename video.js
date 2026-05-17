@@ -3,20 +3,22 @@
   let video = d.fullscreenElement || d.scrollingElement;
   if (!(video instanceof HTMLVideoElement)) {
     let videos = video.getElementsByTagName("video");
-    let { max, min } = Math;
+    let wndW = innerWidth;
+    let wndH = innerHeight;
     let maxVisibleSize = 0;
-    let i = 0;
-    while (i < videos.length) {
-      let _video = videos[i];
+    let i = videos.length;
+    while (i) {
+      let _video = videos[--i];
       if (_video.readyState) {
-        let rect = _video.getBoundingClientRect();
-        let visibleSize = max(min(rect.right, innerWidth) - max(rect.x, 0), 0) * max(min(rect.bottom, innerHeight) - max(rect.y, 0), 0);
+        let { right, x, bottom, y } = _video.getBoundingClientRect();        
+        let visibleW = (right < wndW ? right : wndW) - (x < 0 ? 0 : x);
+        let visibleH = (bottom < wndH ? bottom : wndH) - (y < 0 ? 0 : y);
+        let visibleSize = visibleW * visibleH;
         maxVisibleSize < visibleSize && (
           maxVisibleSize = visibleSize,
           video = _video
         );
       }
-      ++i;
     }
     video?.readyState || (video = video.shadowRoot?.querySelector("video"));
   }
