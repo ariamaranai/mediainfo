@@ -48,13 +48,14 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
             args: [srcUrl],
             func: srcUrl => {
               let videos = document.getElementsByTagName("video");
-              let i = 0;
-              while (i < videos.length) {
-                let video = videos[i];
-                if (video.currentSrc == src)
+              let i = videos.length;
+              while (i) {
+                let video = videos[--i];
+                if (video.currentSrc == srcUrl)
                   return [video.videoWidth, video.videoHeight, video.currentSrc];
                 ++i;
               }
+              return 0;
             }
           }
           : {
@@ -67,7 +68,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         dimension = result[0] + " x " + result[1];
         await download(srcUrl ??= result[2]);
         if (!totalBytes) {
-          if (srcUrl[0] != "b") {
+          if (srcUrl.charCodeAt == 98)
+            finalUrl = srcUrl;
+          else {
             let tabUrl = tab.url;
             let addRules = [{
               id: 1,
@@ -107,8 +110,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
             chrome.declarativeNetRequest.updateSessionRules({
               removeRuleIds: [1]
             });
-          } else
-            finalUrl = srcUrl;
+          }
         }
       }
     }
