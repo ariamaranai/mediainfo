@@ -1,7 +1,7 @@
 (() => {
   let d = document;
   let video = d.fullscreenElement || d.scrollingElement;
-  if (!(video instanceof HTMLVideoElement)) {
+  if (video?.localName != "video") {
     let videos = video.getElementsByTagName("video");
     let wndW = innerWidth;
     let wndH = innerHeight;
