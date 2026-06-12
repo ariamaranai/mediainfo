@@ -1,6 +1,6 @@
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   try {
-    let finalUrl = 0;
+    let finalUrl;
     let totalBytes = 0;
     let dimension = "";
     let mime = "";
