@@ -68,7 +68,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         dimension = result[0] + " x " + result[1];
         await download(srcUrl ??= result[2]);
         if (!totalBytes) {
-          if (srcUrl[0] == 98)
+          if (srcUrl[0] == "b")
             finalUrl = srcUrl;
           else {
             let tabUrl = tab.url;
