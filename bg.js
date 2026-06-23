@@ -10,7 +10,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         downloads.cancel(item.id);
         downloads.onCreated.removeListener(onCreated);
         let _mime = item.mime;
-        (_mime.includes("image") || _mime.includes("video")) && (
+        (_mime.startsWith("image") || _mime.startsWith("video")) && (
           finalUrl = item.finalUrl,
           totalBytes = item.totalBytes,
           mime = _mime
@@ -68,7 +68,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         dimension = result[0] + " x " + result[1];
         await download(srcUrl ??= result[2]);
         if (!totalBytes) {
-          if (srcUrl.charCodeAt == 98)
+          if (srcUrl[0] == 98)
             finalUrl = srcUrl;
           else {
             let tabUrl = tab.url;
