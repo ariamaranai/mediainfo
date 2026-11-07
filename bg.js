@@ -78,7 +78,7 @@
             result && ((!videoData || videoData[0] < (result = result[0])) && (videoData = result))
           }
           if (videoData) {
-            downloads.onCreated.addListener(onCreated);
+            downloads.onCreated.addListener(onDownloadsCreated);
             downloads.download({ url: srcUrl ??= videoData[2] });
             dimension = videoData[0] + " x " + videoData[1];
           }
@@ -149,20 +149,16 @@
           downloads.download({ url: srcUrl })
         )
       }),
-    ]).then(() => {
-      action.openPopup(() =>
-        runtime.sendMessage([finalUrl, dimension])
-      );
-      if (totalBytes) {
-        let localeTotalBytes = totalBytes.toLocaleString();
-        dimension +=
-          "\n" +
-          (totalBytes > 1023 && totalBytes < 1099511627775
-            ? (totalBytes < 1048576 ? (totalBytes / 1024).toFixed(1) + " KB (" : totalBytes < 1073741824 ? (totalBytes / 1048576).toFixed(1) + " MB (" : (totalBytes / 1073741824).toFixed(1) + " GB (") + localeTotalBytes + " bytes) "
-            : localeTotalBytes + " Bytes ") +
-          mime;
-      }
-    });
+    ]).then(() => (
+      action.openPopup(() => runtime.sendMessage([finalUrl, dimension])),
+      totalBytes && (
+        dimension += "\n" + (
+          totalBytes > 1023 && totalBytes < 1099511627775
+            ? (totalBytes < 1048576 ? (totalBytes / 1024).toFixed(1) + " KB (" : totalBytes < 1073741824 ? (totalBytes / 1048576).toFixed(1) + " MB (" : (totalBytes / 1073741824).toFixed(1) + " GB (") + totalBytes.toLocaleString() + " bytes) "
+            : totalBytes.toLocaleString() + " Bytes "
+        ) + mime
+      )
+    ));
   });
   runtime.onInstalled.addListener(() =>
     contextMenus.create({
