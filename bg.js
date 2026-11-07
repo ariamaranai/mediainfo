@@ -89,7 +89,7 @@
         window.state === "fullscreen" && windows.update(window.id, { state: "maximized" }),
         action.setPopup({ popup: "popup.htm", tabId })
       )),
-      new Promise(resolve => {
+      new Promise(resolve => (
         onDownloadsCreated = item => {
           downloads.cancel(item.id);
           downloads.onCreated.removeListener(onDownloadsCreated);
@@ -143,12 +143,12 @@
             })
           );
           let controller = new AbortController;
-        }
+        },
         isImage && (
           downloads.onCreated.addListener(onDownloadsCreated),
           downloads.download({ url: srcUrl })
         )
-      }),
+      )),
     ]).then(() => (
       action.openPopup(() => runtime.sendMessage([finalUrl, dimension])),
       totalBytes && (
