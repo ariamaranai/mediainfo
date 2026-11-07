@@ -128,7 +128,7 @@
               declarativeNetRequest.updateSessionRules({
                 removeRuleIds: [1],
                 addRules
-              }, () => {
+              }, () =>
                 fetch(finalUrl, { method: "HEAD" })
                 .then(({ headers }) => (
                   declarativeNetRequest.updateSessionRules({
@@ -138,7 +138,7 @@
                   mime = headers.get("content-type"),
                   resolve()
                 ))
-              });
+              );
               controller.abort();
             })
           );
