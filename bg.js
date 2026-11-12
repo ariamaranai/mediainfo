@@ -25,8 +25,9 @@
               let i = images.length;
               while (i) {
                 let image = images[--i];
-                if (image.currentSrc == srcUrl)
-                  return (image = image.naturalWidth) + " x " + (i = image.naturalHeight) + "(" + image / i + ")";
+                if (image.currentSrc === srcUrl) {
+                  return (images = image.naturalWidth) + " x " + (i = image.naturalHeight) + "(" + images / i + ")";
+                }
               }
             } :
           srcUrl ?
